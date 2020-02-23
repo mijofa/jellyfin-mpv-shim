@@ -6,6 +6,7 @@ import os
 # That has been fixed upstream though and simply not made it to pypi, can be installed with:
 #     pip3 install git+https://github.com/YuriyLisovskiy/pynotifier
 import pynotifier
+import pynput.keyboard
 
 from .utils import plex_color_to_mpv
 from .conf import settings
@@ -24,6 +25,20 @@ NAVIGATION_DICT = {
     "MoveRight": "right",
     "MoveLeft": "left",
     "GoHome": "home",
+}
+
+keyboard = pynput.keyboard.Controller()
+
+jf_cmd_to_kbrd_key = {
+    'Back': pynput.keyboard.Key.esc,
+    'Select': pynput.keyboard.Key.enter,
+    'MoveUp': pynput.keyboard.Key.up,
+    'MoveDown': pynput.keyboard.Key.down,
+    'MoveRight': pynput.keyboard.Key.right,
+    'MoveLeft': pynput.keyboard.Key.left,
+    'GoHome': pynput.keyboard.Key.home,  # FIXME
+    'ToggleContextMenu': pynput.keyboard.Key.menu,  # FIXME
+    'GoToSearch': None,  # FIXME: Can pynput use the XF86Search button?
 }
 
 def bind(event_name):
@@ -87,7 +102,8 @@ class EventHandler(object):
             timelineManager.delay_idle()
             if self.mirror:
                 self.mirror.DisplayContent(client, arguments)
-        elif command in ("Back", "Select", "MoveUp", "MoveDown", "MoveRight", "MoveRight", "GoHome"):
+        elif command == "GoToSettings":
+            # FIXME: Use ToggleContextMenu instead?
             playerManager.menu.menu_action(NAVIGATION_DICT[command])
         elif command == "DisplayMessage":
             # FIXME: This looks super ugly on Debian, I think it's using __repr__ instead of __str__ or something like that.
@@ -99,6 +115,22 @@ class EventHandler(object):
                     description=arguments['Arguments'].get('Text', ''),
                     icon_path=icon_file,
                 ).send()
+        elif command in ("Back", "Select", "MoveUp", "MoveDown", "MoveLeft", "MoveRight", "GoHome", "ToggleContextMenu", "GoToSearch"):
+            if playerManager.menu.is_menu_shown:
+                # FIXME: Consider just letting the keyboard emulation control the mpv menu instead of doing so directly.
+                #        Seems a bit cleaner to do so directly, but if doing both functions "more code is more bad"
+                playerManager.menu.menu_action(NAVIGATION_DICT[command])
+            else:
+                k = jf_cmd_to_kbrd_key[command]
+                # Pynput has no momentary press function, and I'm nervous about an exception causing the button to not be released.
+                # This will release the key even if there's an exception, but continue to raise an exception due to the lack of 'except'.
+                try:
+                    keyboard.press(k)
+                finally:
+                    keyboard.release(k)
+        elif command == "SendString":
+            keyboard.type(arguments['Arguments'].get('String', ''))
+            # FIXME: Is it worth pressing Enter after typing?
         elif command in ("Mute", "Unmute"):
             playerManager.set_mute(command == "Mute")
         elif command == "TakeScreenshot":
