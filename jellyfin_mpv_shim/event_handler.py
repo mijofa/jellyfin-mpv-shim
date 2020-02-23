@@ -1,5 +1,11 @@
+import importlib.resources
 import logging
 import os
+
+# On Linux the pypi version of this puts annoying double-quotes in the notification.
+# That has been fixed upstream though and simply not made it to pypi, can be installed with:
+#     pip3 install git+https://github.com/YuriyLisovskiy/pynotifier
+import pynotifier
 
 from .utils import plex_color_to_mpv
 from .conf import settings
@@ -83,6 +89,16 @@ class EventHandler(object):
                 self.mirror.DisplayContent(client, arguments)
         elif command in ("Back", "Select", "MoveUp", "MoveDown", "MoveRight", "MoveRight", "GoHome"):
             playerManager.menu.menu_action(NAVIGATION_DICT[command])
+        elif command == "DisplayMessage":
+            # FIXME: This looks super ugly on Debian, I think it's using __repr__ instead of __str__ or something like that.
+            #        Either patch pynotifier upstream, or replace it with something else.
+            #        Also the text is very small, but that's likely a config thing in the notification daemon
+            with importlib.resources.path(__package__, 'systray.png') as icon_file:
+                pynotifier.Notification(
+                    title=arguments['Arguments'].get('Header', ''),
+                    description=arguments['Arguments'].get('Text', ''),
+                    icon_path=icon_file,
+                ).send()
         elif command in ("Mute", "Unmute"):
             playerManager.set_mute(command == "Mute")
         elif command == "TakeScreenshot":

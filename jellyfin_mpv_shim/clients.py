@@ -135,6 +135,7 @@ class ClientManager(object):
         client.jellyfin.post_capabilities({
             'PlayableMediaTypes': "Video",
             'SupportsMediaControl': True,
+            # FIXME: If the apiclient library won't accept a list, should probably just use ','.join() instead
             'SupportedCommands': (
                 "MoveUp,MoveDown,MoveLeft,MoveRight,Select,"
                 "Back,ToggleFullscreen,"
@@ -142,6 +143,7 @@ class ClientManager(object):
                 "VolumeUp,VolumeDown,ToggleMute,"
                 "SetAudioStreamIndex,SetSubtitleStreamIndex,"
                 "Mute,Unmute,SetVolume,DisplayContent,"
+                "DisplayMessage,"
                 "Play,Playstate,PlayNext,PlayMediaSource"
             ),
         })
