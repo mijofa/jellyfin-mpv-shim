@@ -31,9 +31,9 @@ jf_cmd_to_kbrd_key = {
     'MoveDown': pynput.keyboard.Key.down,
     'MoveRight': pynput.keyboard.Key.right,
     'MoveLeft': pynput.keyboard.Key.left,
-    'GoHome': pynput.keyboard.Key.home,  # FIXME
+    'GoHome': pynput.keyboard.KeyCode(269025048),  # XF86HomePage
     'ToggleContextMenu': pynput.keyboard.Key.menu,  # FIXME
-    'GoToSearch': None,  # FIXME: Can pynput use the XF86Search button?
+    'GoToSearch': pynput.keyboard.KeyCode(269025051),  # XF86Search
 }
 
 def bind(event_name):
