@@ -84,6 +84,7 @@ class EventHandler(object):
     def general_command(self, client, event_name, arguments):
         command = arguments.get("Name")
         if command == "SetVolume":
+            # FIXME: Set the system volume when movie isn't running
             # There is currently a bug that causes this to be spammed, so we
             # only update it if the value actually changed.
             if playerManager.get_volume(True) != int(arguments["Arguments"]["Volume"]):
@@ -99,9 +100,9 @@ class EventHandler(object):
                 self.mirror.DisplayContent(client, arguments)
         elif command == "GoToSettings":
             # FIXME: Use ToggleContextMenu instead?
-            playerManager.menu.menu_action(NAVIGATION_DICT[command])
+            playerManager.menu.show_menu()
         elif command in ("Back", "Select", "MoveUp", "MoveDown", "MoveLeft", "MoveRight", "GoHome", "ToggleContextMenu", "GoToSearch"):
-            if playerManager.menu.is_menu_shown:
+            if playerManager.menu.is_menu_shown and command in NAVIGATION_DICT:
                 # FIXME: Consider just letting the keyboard emulation control the mpv menu instead of doing so directly.
                 #        Seems a bit cleaner to do so directly, but if doing both functions "more code is more bad"
                 playerManager.menu.menu_action(NAVIGATION_DICT[command])
