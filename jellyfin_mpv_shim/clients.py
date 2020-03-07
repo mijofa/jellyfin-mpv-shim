@@ -144,7 +144,7 @@ class ClientManager(object):
                 "SetAudioStreamIndex,SetSubtitleStreamIndex,"
                 "Mute,Unmute,SetVolume,DisplayContent,"
                 "DisplayMessage,"
-                "GoToSearch,ToggleContextMenu,SendString,"
+                "GoToSearch,ToggleContextMenu,"
                 "Play,Playstate,PlayNext,PlayMediaSource"
             ),
         })
