@@ -1,7 +1,7 @@
 import logging
 import os
 
-import pynput.keyboard
+import uinput
 
 from .utils import plex_color_to_mpv
 from .conf import settings
@@ -22,19 +22,19 @@ NAVIGATION_DICT = {
     "GoHome": "home",
 }
 
-keyboard = pynput.keyboard.Controller()
-
 jf_cmd_to_kbrd_key = {
-    'Back': pynput.keyboard.Key.esc,
-    'Select': pynput.keyboard.Key.enter,
-    'MoveUp': pynput.keyboard.Key.up,
-    'MoveDown': pynput.keyboard.Key.down,
-    'MoveRight': pynput.keyboard.Key.right,
-    'MoveLeft': pynput.keyboard.Key.left,
-    'GoHome': pynput.keyboard.KeyCode(269025048),  # XF86HomePage
-    'ToggleContextMenu': pynput.keyboard.Key.menu,  # FIXME
-    'GoToSearch': pynput.keyboard.KeyCode(269025051),  # XF86Search
+    'Back': uinput.KEY_ESC,
+    'Select': uinput.KEY_ENTER,
+    'MoveUp': uinput.KEY_UP,
+    'MoveDown': uinput.KEY_DOWN,
+    'MoveRight': uinput.KEY_RIGHT,
+    'MoveLeft': uinput.KEY_LEFT,
+    'GoHome': uinput.KEY_HOMEPAGE,  # XF86HomePage
+    'ToggleContextMenu': uinput.KEY_MENU,  # FIXME
+    'GoToSearch': uinput.KEY_SEARCH,  # XF86Search
 }
+
+keyboard = uinput.Device(jf_cmd_to_kbrd_key.values())
 
 def bind(event_name):
     def decorator(func):
@@ -108,15 +108,11 @@ class EventHandler(object):
                 playerManager.menu.menu_action(NAVIGATION_DICT[command])
             else:
                 k = jf_cmd_to_kbrd_key[command]
-                # Pynput has no momentary press function, and I'm nervous about an exception causing the button to not be released.
-                # This will release the key even if there's an exception, but continue to raise an exception due to the lack of 'except'.
-                try:
-                    keyboard.press(k)
-                finally:
-                    keyboard.release(k)
-        elif command == "SendString":
-            keyboard.type(arguments['Arguments'].get('String', ''))
-            # FIXME: Is it worth pressing Enter after typing?
+                keyboard.emit_click(k)
+# FIXME: I think doing SendString with uinput is a big task.
+#        elif command == "SendString":
+#            keyboard.type(arguments['Arguments'].get('String', ''))
+#            # FIXME: Is it worth pressing Enter after typing?
         elif command in ("Mute", "Unmute"):
             playerManager.set_mute(command == "Mute")
         elif command == "TakeScreenshot":
